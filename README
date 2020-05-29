@@ -1,0 +1,12 @@
+A basic base62 encoder
+
+Inspiried by Base64.java by John Jiyang Hou posted at
+https://www.codeproject.com/articles/1076295/base-encode
+
+I've made an attempt to make it somewhat similar in spirit, however
+this is C and the idoms are different than java thus I elected to
+allow for some variation especially with regards to boundary
+conditions around buffer sizes and the error handling there-of.
+
+With luck, data encoding and decoding should be the same between
+John's Java version and this C version.
