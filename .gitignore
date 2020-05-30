@@ -1,3 +1,5 @@
+base62decode
+base62encode
 test-base62-roundtrip
 
 *~

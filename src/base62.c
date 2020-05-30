@@ -81,8 +81,8 @@ static size_t base62_append(char *buf, size_t buflen, size_t b)
 	return 2;
 }
 
-char *base62_encode(char *buf, size_t buf_len, const uint8_t *data,
-		    size_t data_len)
+char *base62_encode(char *buf, size_t buf_len,
+		    const uint8_t *data, size_t data_len)
 {
 	if (!buf) {
 		return NULL;
@@ -113,18 +113,21 @@ char *base62_encode(char *buf, size_t buf_len, const uint8_t *data,
 	return enough_space ? buf : NULL;
 }
 
-uint8_t *base62_decode(uint8_t *buf, size_t buf_len, const char *encoded,
-		       size_t encoded_len)
+uint8_t *base62_decode(uint8_t *buf, size_t buf_len, size_t *written,
+		       const char *encoded, size_t encoded_len)
 {
-	if (!buf || !buf_len) {
-		Eprintf("%p, %zu?", (void *)buf, buf_len);
+	if (written) {
+		*written = 0;
+	}
+	if (!buf || !buf_len || !written) {
+		Eprintf("%p, %zu, %p?", (void *)buf, buf_len, (void *)written);
 		return NULL;
 	}
 	base62_memset(buf, 0x00, buf_len);
 
 	uint8_t word[4];
 
-	size_t pos = 0;
+	(*written) = 0;
 	size_t j = 0;
 	for (size_t i = 0; i < encoded_len && encoded[i]; ++i) {
 		if (base62_isspace(encoded[i])) {
@@ -163,19 +166,19 @@ uint8_t *base62_decode(uint8_t *buf, size_t buf_len, const char *encoded,
 		}
 
 		if (j == 4) {
-			if (pos + 2 >= buf_len) {
-				Eprintf("%zu + 2 >= %zu?", pos, buf_len);
+			if ((*written) + 2 >= buf_len) {
+				Eprintf("%zu + 2 >= %zu?", (*written), buf_len);
 				return NULL;
 			}
-			buf[pos++] = ((word[0] << 2) | (word[1] >> 4));
-			buf[pos++] = ((word[1] << 4) | (word[2] >> 2));
-			buf[pos++] = ((word[2] << 6) | (word[3] >> 0));
+			buf[(*written)++] = ((word[0] << 2) | (word[1] >> 4));
+			buf[(*written)++] = ((word[1] << 4) | (word[2] >> 2));
+			buf[(*written)++] = ((word[2] << 6) | (word[3] >> 0));
 			j = 0;
 		}
 	}
 
-	if (j && pos >= buf_len) {
-		Eprintf("%zu >= %zu?", pos, buf_len);
+	if (j && (*written) >= buf_len) {
+		Eprintf("%zu >= %zu?", (*written), buf_len);
 		return NULL;
 	}
 
@@ -183,18 +186,18 @@ uint8_t *base62_decode(uint8_t *buf, size_t buf_len, const char *encoded,
 	case 0:
 		break;
 	case 1:
-		buf[pos++] = (word[0] << 2);
+		buf[(*written)++] = (word[0] << 2);
 		break;
 	case 2:
-		buf[pos++] = (word[0] << 2) | (word[1] >> 4);
+		buf[(*written)++] = (word[0] << 2) | (word[1] >> 4);
 		break;
 	case 3:
-		buf[pos++] = ((word[0] << 2) | (word[1] >> 4));
-		if (pos >= buf_len) {
-			Eprintf("%zu + 1 >= %zu?", pos, buf_len);
+		buf[(*written)++] = ((word[0] << 2) | (word[1] >> 4));
+		if ((*written) >= buf_len) {
+			Eprintf("%zu + 1 >= %zu?", (*written), buf_len);
 			return NULL;
 		}
-		buf[pos++] = ((word[1] << 4) | (word[2] >> 2));
+		buf[(*written)++] = ((word[1] << 4) | (word[2] >> 2));
 		break;
 	default:
 		Eprintf("%zu > 3?", j);

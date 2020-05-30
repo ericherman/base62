@@ -59,11 +59,16 @@ static int base62_round_trip(int verbose, char *str)
 		goto round_trip_end;
 	}
 
-	uint8_t *decoded = base62_decode(dbuf, buf_size, ebuf, buf_size);
+	size_t dlen = 0;
+	uint8_t *decoded = base62_decode(dbuf, buf_size, &dlen, ebuf, buf_size);
 	if (verbose) {
-		printf("decoded: %s\n", (char *)dbuf);
+		printf("decoded: ");
+		for (size_t i = 0; i < dlen; ++i) {
+			printf("%c", (char)dbuf[i]);
+		}
+		printf("\n");
 	}
-	if (!encoded) {
+	if (!decoded) {
 		++failures;
 		fprintf(stderr, "base62_decode returned NULL?\n");
 	}
@@ -71,6 +76,11 @@ static int base62_round_trip(int verbose, char *str)
 		++failures;
 		fprintf(stderr, "decoded (%p) != buf (%p)?\n",
 			(void *)decoded, (void *)dbuf);
+	}
+	if (dlen != str_len) {
+		++failures;
+		fprintf(stderr, "decoded length (%zu) != (%zu)?\n", dlen,
+			str_len);
 	}
 
 	char *dstr = (char *)dbuf;
