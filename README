@@ -1,6 +1,6 @@
 A basic base62 encoder
 
-Inspiried by Base64.java by John Jiyang Hou posted at
+Inspiried by Base62.java by John Jiyang Hou posted at
 https://www.codeproject.com/articles/1076295/base-encode
 
 I've made an attempt to make it somewhat similar in spirit, however
